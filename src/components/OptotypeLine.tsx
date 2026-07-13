@@ -4,6 +4,7 @@ import { mUnitToMm } from '../lib/acuity/conversions';
 import { fontSizeForXHeightPx } from '../lib/acuity/fontMetrics';
 
 const OPTOTYPE_FONT_FAMILY = "'Times New Roman', Times, serif";
+const OPTOTYPE_FONT_WEIGHT = 700;
 
 interface OptotypeLineProps {
   text: string;
@@ -24,7 +25,7 @@ export function OptotypeLine({ text, m, pixelsPerMm }: OptotypeLineProps) {
     const targetHeightPx = heightMm * pixelsPerMm;
     return {
       heightPx: targetHeightPx,
-      fontSizePx: fontSizeForXHeightPx(targetHeightPx, OPTOTYPE_FONT_FAMILY),
+      fontSizePx: fontSizeForXHeightPx(targetHeightPx, OPTOTYPE_FONT_FAMILY, OPTOTYPE_FONT_WEIGHT),
     };
   }, [m, pixelsPerMm]);
 
@@ -42,6 +43,7 @@ export function OptotypeLine({ text, m, pixelsPerMm }: OptotypeLineProps) {
       <span
         style={{
           fontFamily: OPTOTYPE_FONT_FAMILY,
+          fontWeight: OPTOTYPE_FONT_WEIGHT,
           fontSize: `${fontSizePx}px`,
           // El interlineado no afecta el tamaño físico calibrado del glifo (que
           // depende solo de font-size vía fontSizeForXHeightPx) — solo el

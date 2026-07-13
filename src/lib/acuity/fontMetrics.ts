@@ -14,8 +14,15 @@
 const TEST_FONT_SIZE_PX = 1000;
 const xHeightRatioCache = new Map<string, number>();
 
-function measureXHeightRatio(fontFamily: string): number {
-  const cached = xHeightRatioCache.get(fontFamily);
+/**
+ * El peso de la fuente (normal/bold) puede alterar ligeramente el ratio
+ * x-height/em de un tipo de letra, así que se mide con el mismo `fontWeight`
+ * que efectivamente se va a renderizar — no un peso arbitrario — para que la
+ * calibración en mm siga siendo exacta.
+ */
+function measureXHeightRatio(fontFamily: string, fontWeight: string | number): number {
+  const cacheKey = `${fontWeight} ${fontFamily}`;
+  const cached = xHeightRatioCache.get(cacheKey);
   if (cached !== undefined) return cached;
 
   const canvas = document.createElement('canvas');
@@ -25,20 +32,24 @@ function measureXHeightRatio(fontFamily: string): number {
     // como fallback conservador en vez de fallar el renderizado del examen.
     return 0.5;
   }
-  ctx.font = `${TEST_FONT_SIZE_PX}px ${fontFamily}`;
+  ctx.font = `${fontWeight} ${TEST_FONT_SIZE_PX}px ${fontFamily}`;
   const metrics = ctx.measureText('x');
   const xHeightPx =
     (metrics.actualBoundingBoxAscent ?? 0) + (metrics.actualBoundingBoxDescent ?? 0);
   const ratio = xHeightPx > 0 ? xHeightPx / TEST_FONT_SIZE_PX : 0.5;
-  xHeightRatioCache.set(fontFamily, ratio);
+  xHeightRatioCache.set(cacheKey, ratio);
   return ratio;
 }
 
 /**
  * Devuelve el `font-size` en px que produce una x-height renderizada igual a
- * `targetHeightPx` para la fuente dada.
+ * `targetHeightPx` para la fuente y peso dados.
  */
-export function fontSizeForXHeightPx(targetHeightPx: number, fontFamily: string): number {
-  const ratio = measureXHeightRatio(fontFamily);
+export function fontSizeForXHeightPx(
+  targetHeightPx: number,
+  fontFamily: string,
+  fontWeight: string | number = 'normal',
+): number {
+  const ratio = measureXHeightRatio(fontFamily, fontWeight);
   return targetHeightPx / ratio;
 }

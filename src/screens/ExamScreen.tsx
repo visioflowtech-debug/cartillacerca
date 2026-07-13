@@ -3,7 +3,7 @@ import { BigTouchButton } from '../components/BigTouchButton';
 import { OptotypeLine } from '../components/OptotypeLine';
 import { logMarToSnellenDenominator } from '../lib/acuity/conversions';
 import { approxJaegerFromMUnit, formatApproxNotation } from '../lib/acuity/jaegerTable';
-import { generateAcuityProgression } from '../lib/acuity/progression';
+import { buildLinesFromMValues, CARD_M_VALUES } from '../lib/acuity/progression';
 import { EYE_LABELS, type Eye, type EyeResult } from '../state/examSession';
 
 interface ExamScreenProps {
@@ -15,10 +15,10 @@ interface ExamScreenProps {
 }
 
 /**
- * Muestra todas las líneas de la progresión simultáneamente en tamaño
- * decreciente, replicando el formato de una cartilla impresa física (en vez
- * de navegar una línea a la vez). El clínico toca directamente el párrafo más
- * pequeño que el paciente logra leer correctamente para ese ojo.
+ * Muestra el conjunto fijo de tamaños M (CARD_M_VALUES) simultáneamente en
+ * tamaño decreciente, replicando el formato de una cartilla impresa física
+ * (en vez de navegar una línea a la vez). El clínico toca directamente el
+ * párrafo más pequeño que el paciente logra leer correctamente para ese ojo.
  */
 export function ExamScreen({
   eyesToTest,
@@ -27,7 +27,7 @@ export function ExamScreen({
   readingText,
   onComplete,
 }: ExamScreenProps) {
-  const lines = useMemo(() => generateAcuityProgression(), []);
+  const lines = useMemo(() => buildLinesFromMValues(CARD_M_VALUES, testDistanceM), [testDistanceM]);
   const [eyeIndex, setEyeIndex] = useState(0);
   const [results, setResults] = useState<EyeResult[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);

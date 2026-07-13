@@ -1,5 +1,5 @@
 import { asMUnit, type LogMAR, type MUnit } from "./types";
-import { STANDARD_TEST_DISTANCE_M } from "./conversions";
+import { logMarFromReading, STANDARD_TEST_DISTANCE_M } from "./conversions";
 
 export interface AcuityLine {
   /** Índice de línea, 0 = la más grande (más fácil). */
@@ -33,4 +33,23 @@ export function generateAcuityProgression(
     lines.push({ index: i, m, logMar: logMar as LogMAR });
   }
   return lines;
+}
+
+/**
+ * Conjunto fijo de tamaños M mostrados en la cartilla de examen, elegido por
+ * el clínico en vez de la progresión logMAR automática de 0.1 en 0.1. Los
+ * valores no siguen un paso logarítmico constante — se muestran tal cual se
+ * definieron.
+ */
+export const CARD_M_VALUES: number[] = [2.0, 1.75, 1.5, 1.25, 0.75];
+
+/** Construye líneas de examen a partir de una lista explícita de valores M. */
+export function buildLinesFromMValues(
+  mValues: number[],
+  testDistanceM = STANDARD_TEST_DISTANCE_M,
+): AcuityLine[] {
+  return mValues.map((value, index) => {
+    const m = asMUnit(value);
+    return { index, m, logMar: logMarFromReading(m, testDistanceM) };
+  });
 }

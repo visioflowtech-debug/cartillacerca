@@ -209,12 +209,15 @@
   box-shadow: inset 0 0 0 3px var(--info-border);
 }
 
+/* Gris tenue a propósito: visible para que el optometrista identifique la
+   medida, pero de bajo contraste para no interferir con la prueba de lectura
+   del paciente (que solo debe ver el párrafo en negrita, negro sobre blanco). */
 .acuity-line-label {
   display: block;
   margin-top: 0.35rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #9ca3af;
 }
 
 /* Configuración */
