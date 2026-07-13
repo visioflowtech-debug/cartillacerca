@@ -10,7 +10,8 @@ interface ExamScreenProps {
   eyesToTest: Eye[];
   testDistanceM: number;
   pixelsPerMm: number;
-  readingText: string;
+  /** Un párrafo distinto por cada tamaño de CARD_M_VALUES, en el mismo orden. */
+  readingParagraphs: string[];
   onComplete: (results: EyeResult[]) => void;
 }
 
@@ -24,7 +25,7 @@ export function ExamScreen({
   eyesToTest,
   testDistanceM,
   pixelsPerMm,
-  readingText,
+  readingParagraphs,
   onComplete,
 }: ExamScreenProps) {
   const lines = useMemo(() => buildLinesFromMValues(CARD_M_VALUES, testDistanceM), [testDistanceM]);
@@ -71,7 +72,11 @@ export function ExamScreen({
               onClick={() => setSelectedIndex(i)}
               aria-pressed={selected}
             >
-              <OptotypeLine text={readingText} m={line.m} pixelsPerMm={pixelsPerMm} />
+              <OptotypeLine
+                words={(readingParagraphs[i % readingParagraphs.length] ?? '').split(' ')}
+                m={line.m}
+                pixelsPerMm={pixelsPerMm}
+              />
               <span className="acuity-line-label">
                 {formatApproxNotation('J', jaeger)} — {line.m.toFixed(2)}M — logMAR{' '}
                 {line.logMar >= 0 ? '+' : ''}

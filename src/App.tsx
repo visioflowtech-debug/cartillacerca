@@ -10,7 +10,7 @@ import { ExamScreen } from './screens/ExamScreen';
 import { ResultsScreen } from './screens/ResultsScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { getCalibration, getSettings, isCalibrated } from './lib/calibration/storage';
-import { READING_TEXTS } from './content/readingTexts';
+import { READING_PARAGRAPHS } from './content/readingTexts';
 import { createEmptySession, type Eye, type EyeResult } from './state/examSession';
 
 type Screen =
@@ -135,7 +135,7 @@ function App() {
           eyesToTest={session.eyesToTest}
           testDistanceM={session.confirmedDistanceM}
           pixelsPerMm={calibration.pixelsPerMm}
-          readingText={READING_TEXTS[settings.readingTextLanguage]}
+          readingParagraphs={READING_PARAGRAPHS[settings.readingTextLanguage]}
           onComplete={handleExamComplete}
         />
       )}

@@ -13,6 +13,15 @@
 
 const TEST_FONT_SIZE_PX = 1000;
 const xHeightRatioCache = new Map<string, number>();
+let sharedCanvasCtx: CanvasRenderingContext2D | null | undefined;
+
+/** Reutiliza un único <canvas> oculto para todas las mediciones de texto de este módulo. */
+function getSharedCtx(): CanvasRenderingContext2D | null {
+  if (sharedCanvasCtx === undefined) {
+    sharedCanvasCtx = document.createElement('canvas').getContext('2d');
+  }
+  return sharedCanvasCtx;
+}
 
 /**
  * El peso de la fuente (normal/bold) puede alterar ligeramente el ratio
@@ -25,8 +34,7 @@ function measureXHeightRatio(fontFamily: string, fontWeight: string | number): n
   const cached = xHeightRatioCache.get(cacheKey);
   if (cached !== undefined) return cached;
 
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
+  const ctx = getSharedCtx();
   if (!ctx) {
     // No debería ocurrir en un navegador moderno; usar razón típica documentada
     // como fallback conservador en vez de fallar el renderizado del examen.
@@ -52,4 +60,16 @@ export function fontSizeForXHeightPx(
 ): number {
   const ratio = measureXHeightRatio(fontFamily, fontWeight);
   return targetHeightPx / ratio;
+}
+
+/**
+ * Ancho real en px de `text` renderizado con `font` (shorthand CSS/canvas
+ * completo, p. ej. `"700 42px 'Times New Roman', Times, serif"`). Usado para
+ * envolver los párrafos de lectura en líneas de un ancho exacto conocido.
+ */
+export function measureTextWidthPx(text: string, font: string): number {
+  const ctx = getSharedCtx();
+  if (!ctx) return 0;
+  ctx.font = font;
+  return ctx.measureText(text).width;
 }

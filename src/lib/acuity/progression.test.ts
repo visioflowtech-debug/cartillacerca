@@ -40,8 +40,8 @@ describe("buildLinesFromMValues", () => {
     expect(lines.map((l) => l.m)).toEqual(CARD_M_VALUES);
   });
 
-  it("CARD_M_VALUES es el conjunto fijo de 5 tamaños pedido por el clínico", () => {
-    expect(CARD_M_VALUES).toEqual([2.0, 1.75, 1.5, 1.25, 0.75]);
+  it("CARD_M_VALUES es el conjunto fijo de 7 tamaños pedido por el clínico", () => {
+    expect(CARD_M_VALUES).toEqual([2.0, 1.75, 1.5, 1.25, 1.0, 0.75, 0.5]);
   });
 
   it("calcula logMAR de cada línea a la distancia de examen dada (log10(M/distancia))", () => {

@@ -41,7 +41,7 @@ export function generateAcuityProgression(
  * valores no siguen un paso logarítmico constante — se muestran tal cual se
  * definieron.
  */
-export const CARD_M_VALUES: number[] = [2.0, 1.75, 1.5, 1.25, 0.75];
+export const CARD_M_VALUES: number[] = [2.0, 1.75, 1.5, 1.25, 1.0, 0.75, 0.5];
 
 /** Construye líneas de examen a partir de una lista explícita de valores M. */
 export function buildLinesFromMValues(
