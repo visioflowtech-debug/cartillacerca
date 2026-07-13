@@ -28,7 +28,9 @@ export default defineConfig({
       workbox: {
         // El modelo de MediaPipe (.task, varios MB) y su wasm se sirven desde /mediapipe/
         // (ver public/mediapipe/) y deben cachearse la primera vez para uso offline.
-        globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
+        // woff2/woff: la fuente Tinos autohospedada (@fontsource/tinos) debe
+        // quedar precacheada para que el examen se vea igual offline.
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff,woff2}'],
         runtimeCaching: [
           {
             urlPattern: /\/mediapipe\/.*/i,

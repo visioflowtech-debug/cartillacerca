@@ -84,10 +84,22 @@ la tabla de referencia usada.
 - **Rango de la tabla Jaeger/N:** cubre aproximadamente 20/20 a 20/100
   (0.5M–1.3M). Fuera de ese rango, la UI muestra `<J1`/`>J10` (o `<N4.5`/`>N14`)
   en vez de forzar una equivalencia inventada.
-- **Fuente de optotipos:** el renderizado usa Times New Roman a tamaño físico
-  exacto (mm) vía medición real del x-height del glifo en `<canvas>` — no
-  asume que el `font-size` CSS corresponda a la altura visible, ya que esa
-  relación varía por fuente y por navegador.
+- **Fuente de optotipos:** Times/Times New Roman es la tipografía citada en la
+  literatura oftalmológica como estándar para cartillas de lectura continua
+  (N-notation, versión comercial de MNREAD — ver FW Law, "Standardization of
+  Reading Types", Br J Ophthalmol 1951; mnread.umn.edu/design). Como no está
+  garantizado que el sistema operativo tenga Times New Roman instalada
+  (sobre todo en Android/Linux, donde caería a un serif de reemplazo con
+  métricas distintas, rompiendo la estandarización visual entre pacientes/
+  dispositivos), la app autohospeda **Tinos** (Google Fonts, licencia SIL
+  OFL): un clon de métricas idénticas a Times New Roman, vía
+  `@fontsource/tinos`, cacheado por el service worker para uso offline. El
+  tamaño físico exacto (mm) se calcula vía medición real del x-height del
+  glifo en `<canvas>` — no se asume que el `font-size` CSS corresponda a la
+  altura visible, ya que esa relación varía por fuente. El cálculo espera
+  explícitamente a que la fuente termine de cargar (`document.fonts.ready`)
+  antes de medir, para no cachear por error el ratio de una fuente de
+  respaldo temporal.
 - **Sin persistencia de datos de paciente:** los resultados del examen viven
   solo en el estado de la sesión de React y se pierden al recargar o cerrar
   la pestaña. Esto es intencional (no requisito clínico de historial).

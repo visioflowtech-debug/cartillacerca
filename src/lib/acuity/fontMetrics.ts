@@ -73,3 +73,26 @@ export function measureTextWidthPx(text: string, font: string): number {
   ctx.font = font;
   return ctx.measureText(text).width;
 }
+
+let fontsReadyPromise: Promise<void> | null = null;
+
+/**
+ * Espera a que la fuente autohospedada (Tinos) termine de cargar antes de
+ * medir nada. Si se mide el x-height mientras la fuente real todavía está
+ * descargándose, el navegador usa temporalmente una fuente de respaldo
+ * distinta, y ese ratio incorrecto quedaría cacheado para toda la sesión
+ * (ver xHeightRatioCache) — invalidando la precisión clínica del tamaño en
+ * mm. Por eso ningún cálculo de tamaño debe ejecutarse antes de esto.
+ */
+export function waitForFontsReady(fontSpecs: string[]): Promise<void> {
+  if (typeof document === 'undefined' || !('fonts' in document)) {
+    return Promise.resolve();
+  }
+  if (!fontsReadyPromise) {
+    fontsReadyPromise = Promise.all([
+      document.fonts.ready,
+      ...fontSpecs.map((spec) => document.fonts.load(spec).catch(() => undefined)),
+    ]).then(() => undefined);
+  }
+  return fontsReadyPromise;
+}

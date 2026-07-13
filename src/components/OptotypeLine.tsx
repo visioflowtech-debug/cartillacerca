@@ -1,10 +1,19 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { MUnit } from '../lib/acuity/types';
 import { mUnitToMm } from '../lib/acuity/conversions';
-import { fontSizeForXHeightPx, measureTextWidthPx } from '../lib/acuity/fontMetrics';
+import { fontSizeForXHeightPx, measureTextWidthPx, waitForFontsReady } from '../lib/acuity/fontMetrics';
 import { wrapWordsToLines } from '../lib/acuity/paragraphLayout';
 
-const OPTOTYPE_FONT_FAMILY = "'Times New Roman', Times, serif";
+/**
+ * Tinos: clon de métricas idénticas a Times New Roman (Google Fonts, SIL
+ * OFL), autohospedado vía @fontsource/tinos (ver main.tsx). Times/Times New
+ * Roman es la tipografía citada en la literatura oftalmológica como estándar
+ * para cartillas de lectura continua (N-notation, versión comercial de
+ * MNREAD) — Tinos garantiza ese mismo diseño en cualquier dispositivo, en
+ * vez de depender de que el sistema operativo tenga Times New Roman
+ * instalada (no garantizado en Android/Linux).
+ */
+const OPTOTYPE_FONT_FAMILY = "'Tinos', 'Times New Roman', Times, serif";
 const OPTOTYPE_FONT_WEIGHT = 700;
 const TARGET_LINES = 4;
 
@@ -29,6 +38,7 @@ interface OptotypeLineProps {
 export function OptotypeLine({ words, m, pixelsPerMm }: OptotypeLineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidthPx, setContainerWidthPx] = useState(0);
+  const [fontsReady, setFontsReady] = useState(false);
 
   useLayoutEffect(() => {
     const el = containerRef.current;
@@ -46,17 +56,30 @@ export function OptotypeLine({ words, m, pixelsPerMm }: OptotypeLineProps) {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    waitForFontsReady([
+      `400 16px ${OPTOTYPE_FONT_FAMILY}`,
+      `${OPTOTYPE_FONT_WEIGHT} 16px ${OPTOTYPE_FONT_FAMILY}`,
+    ]).then(() => {
+      if (!cancelled) setFontsReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const { fontSizePx, heightPx, lines } = useMemo(() => {
     const heightMm = mUnitToMm(m);
     const targetHeightPx = heightMm * pixelsPerMm;
+    if (!fontsReady || containerWidthPx === 0) {
+      return { fontSizePx: 0, heightPx: targetHeightPx, lines: [] as string[] };
+    }
     const fontSizePx = fontSizeForXHeightPx(targetHeightPx, OPTOTYPE_FONT_FAMILY, OPTOTYPE_FONT_WEIGHT);
     const font = `${OPTOTYPE_FONT_WEIGHT} ${fontSizePx}px ${OPTOTYPE_FONT_FAMILY}`;
-    const lines =
-      containerWidthPx > 0
-        ? wrapWordsToLines(words, (text) => measureTextWidthPx(text, font), containerWidthPx, TARGET_LINES)
-        : [];
+    const lines = wrapWordsToLines(words, (text) => measureTextWidthPx(text, font), containerWidthPx, TARGET_LINES);
     return { fontSizePx, heightPx: targetHeightPx, lines };
-  }, [m, pixelsPerMm, words, containerWidthPx]);
+  }, [m, pixelsPerMm, words, containerWidthPx, fontsReady]);
 
   return (
     <div
