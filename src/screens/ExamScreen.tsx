@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { BigTouchButton } from '../components/BigTouchButton';
 import { OptotypeLine } from '../components/OptotypeLine';
+import { logMarToSnellenDenominator } from '../lib/acuity/conversions';
+import { approxJaegerFromMUnit, formatApproxNotation } from '../lib/acuity/jaegerTable';
 import { generateAcuityProgression } from '../lib/acuity/progression';
 import { EYE_LABELS, type Eye, type EyeResult } from '../state/examSession';
 
@@ -12,6 +14,12 @@ interface ExamScreenProps {
   onComplete: (results: EyeResult[]) => void;
 }
 
+/**
+ * Muestra todas las líneas de la progresión simultáneamente en tamaño
+ * decreciente, replicando el formato de una cartilla impresa física (en vez
+ * de navegar una línea a la vez). El clínico toca directamente el párrafo más
+ * pequeño que el paciente logra leer correctamente para ese ojo.
+ */
 export function ExamScreen({
   eyesToTest,
   testDistanceM,
@@ -21,65 +29,62 @@ export function ExamScreen({
 }: ExamScreenProps) {
   const lines = useMemo(() => generateAcuityProgression(), []);
   const [eyeIndex, setEyeIndex] = useState(0);
-  const [lineIndex, setLineIndex] = useState(0);
   const [results, setResults] = useState<EyeResult[]>([]);
-  const [repeatKey, setRepeatKey] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const currentEye = eyesToTest[eyeIndex];
-  const currentLine = lines[lineIndex];
 
-  function finishEye(smallestReadableIndex: number) {
-    const readableLine = lines[Math.max(smallestReadableIndex, 0)];
+  function confirmSelection() {
+    if (selectedIndex === null) return;
+    const line = lines[selectedIndex];
     const newResults = [
       ...results,
-      { eye: currentEye, smallestReadableM: readableLine.m, testDistanceM },
+      { eye: currentEye, smallestReadableM: line.m, testDistanceM },
     ];
+    setSelectedIndex(null);
     if (eyeIndex + 1 < eyesToTest.length) {
       setResults(newResults);
       setEyeIndex(eyeIndex + 1);
-      setLineIndex(0);
     } else {
       onComplete(newResults);
     }
   }
 
-  function canRead() {
-    if (lineIndex + 1 < lines.length) {
-      setLineIndex(lineIndex + 1);
-    } else {
-      finishEye(lineIndex);
-    }
-  }
-
-  function cannotRead() {
-    finishEye(lineIndex - 1);
-  }
-
-  function goBack() {
-    setLineIndex((i) => Math.max(i - 1, 0));
-  }
-
   return (
     <div className="screen screen--exam">
       <h1>Examen — {EYE_LABELS[currentEye]}</h1>
-      <p className="exam-progress">
-        Línea {lineIndex + 1} de {lines.length} · logMAR {currentLine.logMar.toFixed(2)}
+      <p>
+        Toque el párrafo más pequeño que el paciente logra leer correctamente,
+        luego confirme.
       </p>
 
-      <OptotypeLine key={repeatKey} text={readingText} m={currentLine.m} pixelsPerMm={pixelsPerMm} />
+      <div className="acuity-card">
+        {lines.map((line, i) => {
+          const jaeger = approxJaegerFromMUnit(line.m);
+          const snellenDenom = Math.round(logMarToSnellenDenominator(line.logMar));
+          const selected = selectedIndex === i;
+          return (
+            <button
+              key={i}
+              type="button"
+              className={`acuity-line-row${selected ? ' acuity-line-row--selected' : ''}`}
+              onClick={() => setSelectedIndex(i)}
+              aria-pressed={selected}
+            >
+              <OptotypeLine text={readingText} m={line.m} pixelsPerMm={pixelsPerMm} />
+              <span className="acuity-line-label">
+                {formatApproxNotation('J', jaeger)} — {line.m.toFixed(2)}M — logMAR{' '}
+                {line.logMar >= 0 ? '+' : ''}
+                {line.logMar.toFixed(2)} — Snellen 20/{snellenDenom}
+              </span>
+            </button>
+          );
+        })}
+      </div>
 
-      <div className="screen-actions screen-actions--exam">
-        <BigTouchButton variant="secondary" onClick={goBack} disabled={lineIndex === 0}>
-          Anterior
-        </BigTouchButton>
-        <BigTouchButton variant="secondary" onClick={() => setRepeatKey((k) => k + 1)}>
-          Repetir
-        </BigTouchButton>
-        <BigTouchButton variant="danger" onClick={cannotRead}>
-          No puede leer
-        </BigTouchButton>
-        <BigTouchButton variant="primary" onClick={canRead}>
-          Puede leer
+      <div className="screen-actions no-print">
+        <BigTouchButton variant="primary" disabled={selectedIndex === null} onClick={confirmSelection}>
+          Confirmar y continuar
         </BigTouchButton>
       </div>
     </div>

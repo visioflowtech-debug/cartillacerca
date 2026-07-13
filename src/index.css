@@ -1,7 +1,14 @@
+/*
+ * Fondo blanco / texto negro fijos en TODA la interfaz, independientemente del
+ * tema claro/oscuro del sistema operativo. Es una decisión clínica: un fondo
+ * oscuro alrededor de los optotipos introduciría una variable de contraste no
+ * controlada durante el examen (adaptación del iris, contraste simultáneo),
+ * por eso esta app no sigue `prefers-color-scheme`.
+ */
 :root {
-  --text: #1a1a1a;
-  --text-muted: #4b5563;
-  --bg: #f8fafc;
+  --text: #000000;
+  --text-muted: #3f3f3f;
+  --bg: #ffffff;
   --surface: #ffffff;
   --border: #cbd5e1;
   --primary: #0f172a;
@@ -15,28 +22,10 @@
   --info-text: #1e3a8a;
 
   font: 18px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif;
-  color-scheme: light dark;
+  color-scheme: light;
   color: var(--text);
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #f1f5f9;
-    --text-muted: #cbd5e1;
-    --bg: #0f172a;
-    --surface: #1e293b;
-    --border: #334155;
-    --primary: #38bdf8;
-    --primary-contrast: #0f172a;
-    --warning-bg: #451a03;
-    --warning-border: #f59e0b;
-    --warning-text: #fde68a;
-    --info-bg: #172554;
-    --info-border: #3b82f6;
-    --info-text: #bfdbfe;
-  }
 }
 
 * {

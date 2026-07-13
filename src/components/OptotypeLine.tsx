@@ -34,20 +34,23 @@ export function OptotypeLine({ text, m, pixelsPerMm }: OptotypeLineProps) {
       aria-label={text}
       style={{
         width: '100%',
-        overflowX: 'auto',
-        overflowY: 'hidden',
         background: '#ffffff',
         color: '#000000',
         padding: `${Math.max(heightPx * 0.3, 4)}px 0`,
-        whiteSpace: 'nowrap',
       }}
     >
       <span
         style={{
           fontFamily: OPTOTYPE_FONT_FAMILY,
           fontSize: `${fontSizePx}px`,
-          lineHeight: 1,
+          // El interlineado no afecta el tamaño físico calibrado del glifo (que
+          // depende solo de font-size vía fontSizeForXHeightPx) — solo el
+          // espacio entre líneas cuando el párrafo hace salto de línea.
+          lineHeight: 1.25,
           letterSpacing: 0,
+          whiteSpace: 'normal',
+          overflowWrap: 'break-word',
+          wordBreak: 'normal',
         }}
       >
         {text}
